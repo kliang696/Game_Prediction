@@ -64,3 +64,21 @@ def get_game_info(api_key, match_ids):
         game_info.append(pd.DataFrame.from_dict(participants))
 
     return pd.concat(game_info)
+
+
+def get_tier_rank_info(api_key, game_info_df):
+  """Returns a DataFrame containing player rank&Tier&LP information for the given summonerId."""
+  summonerId_list = list(set(game_info_df['summonerId'].tolist()))
+  Tier_Rank_Info_List=[]
+  for summoner_Id in summonerId_list:
+    summoner_url= f"{SUMMONERS_Tier_URL}{summoner_Id}?api_key={api_key}"
+    get_player_info = requests.get(summoner_url).json()
+    Tier_Rank_Info_List.append(get_player_info)
+  
+  """Only Keep the information with queueType=RANKED_SOLO_5x5 in Tier_Rank_Info_List"""
+  filtered_list = []
+  for i in Tier_Rank_Info_List:
+    for j in i:
+      if j['queueType'] == 'RANKED_SOLO_5x5':
+        filtered_list.append(j)
+  return pd.DataFrame(filtered_list)
