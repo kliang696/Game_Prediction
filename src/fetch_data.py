@@ -8,7 +8,8 @@ from utils import (
     get_player_ids,
     get_puuids,
     get_match_ids,
-    get_game_info
+    get_game_info,
+    get_tier_rank_info
 )
 
 
@@ -26,7 +27,6 @@ if __name__ == "__main__":
         get_api_key_from_secret_manager(PROJECT_ID, SECRET_ID)
 
     logger.info("Fetching data...")
-
     logger.info("Getting leaderboard URLs...")
     urls = get_leaderboard_urls(max_pages=1)
     logger.info("Getting player IDs...")
@@ -38,5 +38,9 @@ if __name__ == "__main__":
     logger.info("Getting game info...")
     game_info_df = get_game_info(api_key, match_ids)
     logger.info("Saving data...")
+    logger.info("Getting player rank info...")
+    rank_info_df = get_tier_rank_info(api_key, game_info_df)
+    logger.info("Saving data...")
     game_info_df.to_csv("out/game_info.csv", index=False)
+    rank_info_df.to_csv("out/rank_info.csv", index=False)
     logger.info("Done!")
