@@ -1,8 +1,10 @@
+import logging
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from google.cloud import secretmanager
-from config import BASE_URL, MATCH_API_BASE_URL, SUMMONERS_BASE_URL
+from config import BASE_URL, MATCH_API_BASE_URL, SUMMONERS_BASE_URL, SUMMONERS_TIER_URL
+
 
 def get_api_key_from_secret_manager(project_id, secret_id, version_id="latest"):
     """Returns the API key from Google Secret Manager."""
@@ -17,13 +19,20 @@ def get_leaderboard_urls(max_pages=6):
 
 def get_player_ids(urls):
     """Returns a list of unique player IDs from the given URLs."""
+
+    if not urls:
+       return []
+    
     text_contents = []
 
     for url in urls:
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        span_elements = soup.select('tbody tr td:not([class]) span')
-        text_contents.extend(span.text for span in span_elements)
+        try:
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
+            span_elements = soup.select('tbody tr td:not([class]) span')
+            text_contents.extend(span.text for span in span_elements)
+        except Exception as e:
+            logging.error(f"Error getting player IDs: {e}")
 
     return list(set(text_contents))
 
@@ -37,8 +46,8 @@ def get_puuids(api_key, ids):
             get_player_info = requests.get(summoner_url).json()
             puuid = get_player_info['puuid']
             puuid_list.append(puuid)
-        except KeyError:
-            continue
+        except Exception as e:
+            logging.error(f"Error getting player info: {e}")
 
     return puuid_list
 
@@ -48,36 +57,47 @@ def get_match_ids(api_key, puuids):
 
     for puuid in puuids:
         get_match = f"{MATCH_API_BASE_URL}by-puuid/{puuid}/ids?type=ranked&start=0&count=3&api_key={api_key}"  # noqa: E501
-        match_info = requests.get(get_match).json()
-        match_id_list.extend(match_info)
-
+        try:
+            match_info = requests.get(get_match).json()
+            if match_info:
+                match_id_list.extend(match_info)
+        except Exception as e:
+            logging.error(f"Error getting match info: {e}")
     return list(set(match_id_list))
 
-def get_game_info(api_key, match_ids):
+def get_game_info(api_key, match_ids, max_games=10):
     """Returns a DataFrame containing game information for the given match IDs."""
     game_info = []
 
-    for match_id in match_ids[:10]:
+    for match_id in match_ids[:max_games]:
         game_info_url = f"{MATCH_API_BASE_URL}{match_id}?api_key={api_key}"
-        participants = requests.get(game_info_url).json()
-        participants = participants["info"]["participants"]
-        game_info.append(pd.DataFrame.from_dict(participants))
-
+        try:
+            participants = requests.get(game_info_url).json()
+            participants = participants["info"]["participants"]
+            game_info.append(pd.DataFrame.from_dict(participants))
+        except Exception as e:
+            logging.error(f"Error getting game info: {e}")
+    
+    if not game_info:
+        return pd.DataFrame()
     return pd.concat(game_info)
 
 
 def get_tier_rank_info(api_key, game_info_df):
   """Returns a DataFrame containing player rank&Tier&LP information for the given summonerId."""
-  summonerId_list = list(set(game_info_df['summonerId'].tolist()))
-  Tier_Rank_Info_List=[]
-  for summoner_Id in summonerId_list:
-    summoner_url= f"{SUMMONERS_Tier_URL}{summoner_Id}?api_key={api_key}"
-    get_player_info = requests.get(summoner_url).json()
-    Tier_Rank_Info_List.append(get_player_info)
+
+  if game_info_df.empty:
+    return pd.DataFrame()
   
-  """Only Keep the information with queueType=RANKED_SOLO_5x5 in Tier_Rank_Info_List"""
+  tier_rank_info_list = []
+  for summoner_Id in game_info_df['summonerId'].unique():
+    summoner_url= f"{SUMMONERS_TIER_URL}{summoner_Id}?api_key={api_key}"
+    get_player_info = requests.get(summoner_url).json()
+    tier_rank_info_list.append(get_player_info)
+  
+  """Only Keep the information with queueType=RANKED_SOLO_5x5 in tier_rank_info_list"""
   filtered_list = []
-  for i in Tier_Rank_Info_List:
+  for i in tier_rank_info_list:
     for j in i:
       if j['queueType'] == 'RANKED_SOLO_5x5':
         filtered_list.append(j)

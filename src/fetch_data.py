@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 
 from config import PROJECT_ID, SECRET_ID
 from utils import (
@@ -41,6 +42,8 @@ if __name__ == "__main__":
     logger.info("Getting player rank info...")
     rank_info_df = get_tier_rank_info(api_key, game_info_df)
     logger.info("Saving data...")
+    out_dir = pathlib.Path("out")
+    out_dir.mkdir(parents=True, exist_ok=True)
     game_info_df.to_csv("out/game_info.csv", index=False)
     rank_info_df.to_csv("out/rank_info.csv", index=False)
     logger.info("Done!")
