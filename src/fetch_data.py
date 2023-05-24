@@ -25,7 +25,7 @@ if __name__ == "__main__":
     if not api_key:
         logger.info("API key not found in environment variables."
                     "Fetching from Secret Manager...")
-        get_api_key_from_secret_manager(PROJECT_ID, SECRET_ID)
+        api_key = get_api_key_from_secret_manager(PROJECT_ID, SECRET_ID)
 
     logger.info("Fetching data...")
     logger.info("Getting leaderboard URLs...")
