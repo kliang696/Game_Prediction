@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 
 from config import PROJECT_ID, SECRET_ID
 from utils import (
@@ -24,7 +25,9 @@ if __name__ == "__main__":
     if not api_key:
         logger.info("API key not found in environment variables."
                     "Fetching from Secret Manager...")
-        get_api_key_from_secret_manager(PROJECT_ID, SECRET_ID)
+        api_key = get_api_key_from_secret_manager(PROJECT_ID, SECRET_ID)
+
+    api_key = "RGAPI-12dc47ad-65da-4aa0-8def-31b7ac160ca9"
 
     logger.info("Fetching data...")
     logger.info("Getting leaderboard URLs...")
@@ -37,10 +40,11 @@ if __name__ == "__main__":
     match_ids = get_match_ids(api_key, puuids)
     logger.info("Getting game info...")
     game_info_df = get_game_info(api_key, match_ids)
-    logger.info("Saving data...")
     logger.info("Getting player rank info...")
     rank_info_df = get_tier_rank_info(api_key, game_info_df)
     logger.info("Saving data...")
+    out_dir = pathlib.Path("out")
+    out_dir.mkdir(parents=True, exist_ok=True)
     game_info_df.to_csv("out/game_info.csv", index=False)
     rank_info_df.to_csv("out/rank_info.csv", index=False)
     logger.info("Done!")
