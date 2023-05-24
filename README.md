@@ -37,7 +37,7 @@ gcloud auth login
 2. Run the application by running the following command:
 
 ```
-python main.py
+python src/fetch_data.py
 ```
 
 ### Running the application using a Service Account
