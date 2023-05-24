@@ -53,7 +53,7 @@ Replace `/path/to/credentials.json` with the path to your Google Cloud credentia
 2. Run the application by running the following command:
 
 ```
-python main.py
+python src/fetch_data.py
 ```
 
 ## Running the application in a Docker container

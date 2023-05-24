@@ -27,8 +27,6 @@ if __name__ == "__main__":
                     "Fetching from Secret Manager...")
         api_key = get_api_key_from_secret_manager(PROJECT_ID, SECRET_ID)
 
-    api_key = "RGAPI-12dc47ad-65da-4aa0-8def-31b7ac160ca9"
-
     logger.info("Fetching data...")
     logger.info("Getting leaderboard URLs...")
     urls = get_leaderboard_urls(max_pages=1)
