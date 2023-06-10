@@ -1,6 +1,7 @@
 import logging
 import os
 import pathlib
+from pathlib import Path
 
 from config import PROJECT_ID, SECRET_ID
 from utils import (
@@ -10,7 +11,8 @@ from utils import (
     get_puuids,
     get_match_ids,
     get_game_info,
-    get_tier_rank_info
+    get_tier_rank_info,
+    upload_to_cloud_storage
 )
 
 
@@ -39,10 +41,12 @@ if __name__ == "__main__":
     logger.info("Getting game info...")
     game_info_df = get_game_info(api_key, match_ids)
     logger.info("Getting player rank info...")
-    rank_info_df = get_tier_rank_info(api_key, game_info_df)
+    #rank_info_df = get_tier_rank_info(api_key, game_info_df)
     logger.info("Saving data...")
     out_dir = pathlib.Path("out")
     out_dir.mkdir(parents=True, exist_ok=True)
     game_info_df.to_csv("out/game_info.csv", index=False)
-    rank_info_df.to_csv("out/rank_info.csv", index=False)
+    #rank_info_df.to_csv("out/rank_info.csv", index=False)
+    logger.info("Upload data...")
+    upload_to_cloud_storage("daily-game-stats", Path("out/game_info.csv"))
     logger.info("Done!")

@@ -3,6 +3,8 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from google.cloud import secretmanager
+from google.cloud import storage
+from pathlib import Path
 from config import BASE_URL, MATCH_API_BASE_URL, SUMMONERS_BASE_URL, SUMMONERS_TIER_URL
 
 
@@ -97,8 +99,22 @@ def get_tier_rank_info(api_key, game_info_df):
   
   """Only Keep the information with queueType=RANKED_SOLO_5x5 in tier_rank_info_list"""
   filtered_list = []
-  for i in tier_rank_info_list:
-    for j in i:
-      if j['queueType'] == 'RANKED_SOLO_5x5':
-        filtered_list.append(j)
+  #for i in tier_rank_info_list:
+   # for j in i:
+    #  if j['queueType'] == 'RANKED_SOLO_5x5':
+     #   filtered_list.append(j)
   return pd.DataFrame(filtered_list)
+
+def upload_to_cloud_storage(bucket_name: str, file_path: Path) -> None:
+    if not file_path.exists():
+        raise FileNotFoundError(f"File {file_path} does not exist")
+    if not file_path.is_file():
+        raise FileNotFoundError(f"{file_path} is not a file")
+    
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+    if not bucket.exists():
+        bucket.create()
+    
+    blob = bucket.blob(file_path.name)
+    blob.upload_from_filename(file_path)
