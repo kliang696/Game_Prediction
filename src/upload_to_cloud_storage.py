@@ -12,8 +12,12 @@ job_config = bigquery.LoadJobConfig(
     source_format=bigquery.SourceFormat.CSV,  # Define source format
 )
 
-# Define the destination table reference
-table_ref = bq_client.dataset(dataset_id).table(table_id)
+dataset_ref = bq_client.dataset(dataset_id)
+# create the dataset if it doesn't exist
+dataset = bigquery.Dataset(dataset_ref)
+dataset = bq_client.create_dataset(dataset, exists_ok=True)
+
+table_ref = dataset_ref.table(table_id)
 
 # Start the load job
 load_job = bq_client.load_table_from_uri(source_uri, table_ref, job_config=job_config)
