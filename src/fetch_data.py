@@ -48,7 +48,7 @@ if __name__ == "__main__":
     logger.info("Saving data...")
     out_dir = pathlib.Path("out")
     out_dir.mkdir(parents=True, exist_ok=True)
-    now = datetime.now()
+    now = datetime(2023, 6, 29) # datetime.now()
     game_info_df['Date'] = now.strftime('%Y-%m-%d')
     game_info_df.to_csv("out/game_info.csv", index=False)
     
@@ -59,9 +59,10 @@ if __name__ == "__main__":
     upload_to_bigquery(
         project_id=PROJECT_ID,
         dataset_id="daily_game_stats",
-        table_id="game_info",
+        table_id="game_info_part",
         source_uri="gs://daily-game-stats/game_info.csv",
-        partition_column="Date"
+        partition_column="Date",
+        partition_date=now.strftime("%Y%m%d")
     )
     logger.info("Upload data to Big Query...")
     

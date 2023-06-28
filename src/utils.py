@@ -13,14 +13,15 @@ def upload_to_bigquery(
         dataset_id,
         table_id,
         source_uri,
-        partition_column
+        partition_column,
+        partition_date
     ):
 
     client = bigquery.Client(project=project_id)
     dataset_ref = client.dataset(dataset_id)
     client.create_dataset(dataset_ref, exists_ok=True)
 
-    table_ref = dataset_ref.table(table_id)
+    table_ref = dataset_ref.table(table_id + "$" + partition_date)
 
     job_config = bigquery.LoadJobConfig(
         autodetect=True,
