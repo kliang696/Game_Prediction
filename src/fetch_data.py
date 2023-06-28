@@ -2,6 +2,8 @@ import logging
 import os
 import pathlib
 from pathlib import Path
+from datetime import datetime
+
 
 from config import PROJECT_ID, SECRET_ID
 from utils import (
@@ -45,8 +47,14 @@ if __name__ == "__main__":
     logger.info("Saving data...")
     out_dir = pathlib.Path("out")
     out_dir.mkdir(parents=True, exist_ok=True)
+    now = datetime.now()
+    game_info_df['Date'] = now.strftime('%Y-%m-%d')
     game_info_df.to_csv("out/game_info.csv", index=False)
+    
     #rank_info_df.to_csv("out/rank_info.csv", index=False)
     logger.info("Upload data...")
     upload_to_cloud_storage("daily-game-stats", Path("out/game_info.csv"))
+
+    logger.info("Upload data to Big Query...")
+    
     logger.info("Done!")

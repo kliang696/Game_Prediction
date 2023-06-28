@@ -4,12 +4,13 @@ bq_client = bigquery.Client()
 
 source_uri = "gs://daily-game-stats/game_info.csv"
 dataset_id = "my_dataset"
-table_id = "my_table"
+table_id = "my_table5$20230607"
 
 # Define the job configuration for the load job
 job_config = bigquery.LoadJobConfig(
     autodetect=True,  # Auto-detect the schema
     source_format=bigquery.SourceFormat.CSV,  # Define source format
+    write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
 )
 
 dataset_ref = bq_client.dataset(dataset_id)

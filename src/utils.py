@@ -6,6 +6,8 @@ from google.cloud import secretmanager
 from google.cloud import storage
 from pathlib import Path
 from config import BASE_URL, MATCH_API_BASE_URL, SUMMONERS_BASE_URL, SUMMONERS_TIER_URL
+from datetime import datetime
+
 
 
 def get_api_key_from_secret_manager(project_id, secret_id, version_id="latest"):
