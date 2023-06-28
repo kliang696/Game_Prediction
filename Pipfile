@@ -8,6 +8,8 @@ beautifulsoup4 = "*"
 google-cloud-secret-manager = "*"
 pandas = "*"
 google-cloud-bigquery = "*"
+numpy = "*"
+google-cloud-storage = "*"
 
 [dev-packages]
 

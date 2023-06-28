@@ -6,8 +6,36 @@ from google.cloud import secretmanager
 from google.cloud import storage
 from pathlib import Path
 from config import BASE_URL, MATCH_API_BASE_URL, SUMMONERS_BASE_URL, SUMMONERS_TIER_URL
-from datetime import datetime
+from google.cloud import bigquery
 
+def upload_to_bigquery(
+        project_id,
+        dataset_id,
+        table_id,
+        source_uri,
+        partition_column
+    ):
+
+    client = bigquery.Client(project=project_id)
+    dataset_ref = client.dataset(dataset_id)
+    client.create_dataset(dataset_ref, exists_ok=True)
+
+    table_ref = dataset_ref.table(table_id)
+
+    job_config = bigquery.LoadJobConfig(
+        autodetect=True,
+        source_format=bigquery.SourceFormat.CSV,
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+        time_partitioning=bigquery.TimePartitioning(
+            type_=bigquery.TimePartitioningType.DAY,
+            field=partition_column,
+        ),
+    )
+    load_job = client.load_table_from_uri(
+        source_uri, table_ref, job_config=job_config
+    )
+    load_job.result()
+    print("Loaded {} rows into {}:{}.".format(load_job.output_rows, dataset_id, table_id))
 
 
 def get_api_key_from_secret_manager(project_id, secret_id, version_id="latest"):

@@ -14,7 +14,8 @@ from utils import (
     get_match_ids,
     get_game_info,
     get_tier_rank_info,
-    upload_to_cloud_storage
+    upload_to_cloud_storage,
+    upload_to_bigquery
 )
 
 
@@ -55,6 +56,13 @@ if __name__ == "__main__":
     logger.info("Upload data...")
     upload_to_cloud_storage("daily-game-stats", Path("out/game_info.csv"))
 
+    upload_to_bigquery(
+        project_id=PROJECT_ID,
+        dataset_id="daily_game_stats",
+        table_id="game_info",
+        source_uri="gs://daily-game-stats/game_info.csv",
+        partition_column="Date"
+    )
     logger.info("Upload data to Big Query...")
     
     logger.info("Done!")
