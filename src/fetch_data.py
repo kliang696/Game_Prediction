@@ -3,6 +3,7 @@ import os
 import pathlib
 from pathlib import Path
 from datetime import datetime
+import time
 
 
 from config import PROJECT_ID, SECRET_ID
@@ -44,22 +45,25 @@ if __name__ == "__main__":
     logger.info("Getting game info...")
     game_info_df = get_game_info(api_key, match_ids)
     logger.info("Getting player rank info...")
-    #rank_info_df = get_tier_rank_info(api_key, game_info_df)
+    time.sleep(90)
+    rank_info_df = get_tier_rank_info(api_key, game_info_df)
     logger.info("Saving data...")
     out_dir = pathlib.Path("out")
     out_dir.mkdir(parents=True, exist_ok=True)
     now = datetime(2023, 6, 29) # datetime.now()
     game_info_df['Date'] = now.strftime('%Y-%m-%d')
+    game_info_df=game_info_df[['Date',"summonerName","championName","individualPosition","goldEarned","kills","deaths","assists","item0","item1","item2","item3","item4","item5","item6","perks","win"]]
     game_info_df.to_csv("out/game_info.csv", index=False)
-    
-    #rank_info_df.to_csv("out/rank_info.csv", index=False)
+
+    rank_info_df.to_csv("out/rank_info.csv", index=False)
     logger.info("Upload data...")
     upload_to_cloud_storage("daily-game-stats", Path("out/game_info.csv"))
+    upload_to_cloud_storage("daily-game-stats", Path("out/rank_info.csv"))
 
     upload_to_bigquery(
         project_id=PROJECT_ID,
         dataset_id="daily_game_stats",
-        table_id="game_info_part",
+        table_id="game_info_part1",
         source_uri="gs://daily-game-stats/game_info.csv",
         partition_column="Date",
         partition_date=now.strftime("%Y%m%d")
