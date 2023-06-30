@@ -130,10 +130,10 @@ def get_tier_rank_info(api_key, game_info_df):
   
   """Only Keep the information with queueType=RANKED_SOLO_5x5 in tier_rank_info_list"""
   filtered_list = []
-  #for i in tier_rank_info_list:
-   # for j in i:
-    #  if j['queueType'] == 'RANKED_SOLO_5x5':
-     #   filtered_list.append(j)
+  for i in tier_rank_info_list:
+    for j in i:
+      if j['queueType'] == 'RANKED_SOLO_5x5':
+        filtered_list.append(j)
   return pd.DataFrame(filtered_list)
 
 def upload_to_cloud_storage(bucket_name: str, file_path: Path) -> None:
